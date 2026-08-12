@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f6f1e8" />
+    <title>เปิดไหว — Café launch simulator</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="./index.html" aria-label="เปิดไหว home">
+        <span class="brand-mark">↗</span>
+        <span><strong>เปิดไหว</strong><small>Perd Wai</small></span>
+      </a>
+      <span class="prototype-tag">Phase 0 prototype</span>
+    </header>
+
+    <main class="shell">
+      <section class="hero">
+        <p class="eyebrow">Before you open</p>
+        <h1>Can your café survive<br /><em>the first six months?</em></h1>
+        <p class="hero-copy">Enter your best current assumptions. We’ll show the cash you need, when it runs out, and what to verify next.</p>
+        <p class="notice"><span aria-hidden="true">ⓘ</span> This is a planning prototype, not financial or tax advice. Replace the example assumptions with evidence.</p>
+      </section>
+
+      <div class="workspace">
+        <section class="card assumptions-card" aria-labelledby="assumptions-title">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow">Step 1 of 2</p>
+              <h2 id="assumptions-title">Your assumptions</h2>
+            </div>
+            <button class="text-button" id="load-demo" type="button">Load example</button>
+          </div>
+
+          <form id="assumptions-form" novalidate>
+            <fieldset>
+              <legend>Money to open</legend>
+              <div class="field-grid">
+                <label>Initial capital <span>THB</span><input name="initialCapital" type="number" min="0" step="1000" placeholder="e.g. 300000" /></label>
+                <label>Monthly rent <span>THB</span><input name="rent" type="number" min="0" step="500" placeholder="e.g. 18000" /></label>
+                <label>Rent deposit <span>months</span><input name="depositMonths" type="number" min="0" step="1" placeholder="e.g. 2" /></label>
+                <label>Equipment + renovation <span>THB</span><input name="equipmentRenovation" type="number" min="0" step="1000" placeholder="e.g. 160000" /></label>
+                <label>Loan proceeds <span>THB, optional</span><input name="loanAmount" type="number" min="0" step="1000" placeholder="0" /></label>
+                <label>Loan repayment <span>THB/month</span><input name="loanRepayment" type="number" min="0" step="500" placeholder="0" /></label>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Sales engine</legend>
+              <div class="field-grid">
+                <label>Average order value <span>THB/order</span><input name="averageOrderValue" type="number" min="1" step="1" placeholder="e.g. 75" /></label>
+                <label>Variable cost per order <span>THB/order</span><input name="variableCostPerOrder" type="number" min="0" step="1" placeholder="e.g. 24" /></label>
+                <label>Expected customers <span>per day</span><input name="customersPerDay" type="number" min="1" step="1" placeholder="e.g. 55" /></label>
+                <label>Opening days <span>per month</span><input name="openDays" type="number" min="1" max="31" step="1" placeholder="e.g. 26" /></label>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Monthly costs</legend>
+              <div class="field-grid">
+                <label>Staff wages <span>THB/month</span><input name="staffWages" type="number" min="0" step="500" placeholder="e.g. 28000" /></label>
+                <label>Utilities <span>THB/month</span><input name="utilities" type="number" min="0" step="500" placeholder="e.g. 7000" /></label>
+                <label>Marketing <span>THB/month</span><input name="marketing" type="number" min="0" step="500" placeholder="e.g. 5000" /></label>
+                <label>Owner withdrawal <span>THB/month</span><input name="ownerWithdrawal" type="number" min="0" step="500" placeholder="e.g. 15000" /></label>
+                <label>Tax / fees reserve <span>THB/month, optional</span><input name="taxReserve" type="number" min="0" step="500" placeholder="0" /></label>
+              </div>
+            </fieldset>
+
+            <div id="validation-message" class="validation-message" role="alert" hidden></div>
+          </form>
+        </section>
+
+        <section class="card scenario-card" aria-labelledby="scenario-title">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow">Step 2 of 2</p>
+              <h2 id="scenario-title">Stress-test one assumption</h2>
+            </div>
+            <span class="pill">What if?</span>
+          </div>
+          <p class="muted">Change customers per day to see the impact on cash. This is a test input, not a market benchmark.</p>
+          <label class="range-label" for="scenario-customers"><span>Scenario demand</span><strong id="scenario-customers-value">—</strong></label>
+          <input id="scenario-customers" type="range" min="0" max="200" value="0" step="1" aria-describedby="scenario-help" />
+          <p id="scenario-help" class="range-endpoints"><span>Lower demand</span><span>Higher demand</span></p>
+        </section>
+      </div>
+
+      <section id="results" class="results" aria-live="polite" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Your forecast</p>
+            <h2>See what your assumptions mean</h2>
+          </div>
+          <p class="small-note">Six-month steady-demand model</p>
+        </div>
+
+        <div class="metric-grid">
+          <article class="metric-card accent"><span>Startup capital required</span><strong id="startup-cost">—</strong><small>Deposit + equipment + renovation</small></article>
+          <article class="metric-card"><span>Monthly revenue</span><strong id="monthly-revenue">—</strong><small>Orders × average order value</small></article>
+          <article class="metric-card"><span>Monthly expenses</span><strong id="monthly-expenses">—</strong><small>Fixed + variable costs</small></article>
+          <article class="metric-card"><span>Gross margin</span><strong id="gross-margin">—</strong><small>After variable cost</small></article>
+        </div>
+
+        <div id="recommendation" class="recommendation caution">
+          <div class="recommendation-icon" aria-hidden="true">!</div>
+          <div><p class="eyebrow">Planning signal</p><h3 id="recommendation-title">—</h3><p id="recommendation-copy">—</p></div>
+        </div>
+
+        <div class="result-grid">
+          <article class="card result-card">
+            <div class="card-heading"><div><p class="eyebrow">Cash runway</p><h3>When does cash run out?</h3></div><span id="cash-runout" class="result-number">—</span></div>
+            <p id="cash-runout-detail" class="muted">—</p>
+            <div id="cash-chart" class="cash-chart" aria-label="Ending cash by month"></div>
+          </article>
+          <article class="card result-card">
+            <div class="card-heading"><div><p class="eyebrow">Break-even</p><h3>Customers needed each day</h3></div><span id="break-even" class="result-number">—</span></div>
+            <p class="muted">The daily sales level needed to cover monthly fixed costs.</p>
+            <details><summary>How is this calculated?</summary><p>Fixed costs ÷ gross-margin percentage ÷ opening days ÷ average order value.</p></details>
+            <div class="scenario-callout"><span class="eyebrow">Scenario result</span><strong id="scenario-ending-cash">—</strong><p id="scenario-summary">—</p></div>
+          </article>
+        </div>
+
+        <article class="card table-card">
+          <div class="card-heading"><div><p class="eyebrow">Monthly detail</p><h3>Cash-flow forecast</h3></div><span class="small-note">THB</span></div>
+          <div class="table-wrap"><table><caption class="sr-only">Six-month cash-flow forecast</caption><thead><tr><th scope="col">Month</th><th scope="col">Revenue</th><th scope="col">Expenses</th><th scope="col">Ending cash</th></tr></thead><tbody id="cash-table-body"></tbody></table></div>
+        </article>
+
+        <details class="formula-details"><summary>How is this calculated?</summary><div class="formula-grid"><p><strong>Revenue</strong><br />Customers/day × open days × average order value</p><p><strong>Variable cost</strong><br />Orders × variable cost per order</p><p><strong>Ending cash</strong><br />Opening cash + monthly cash movement</p><p><strong>Cash movement</strong><br />Revenue − variable cost − monthly fixed costs</p></div></details>
+      </section>
+    </main>
+
+    <footer class="site-footer"><span>เปิดไหว / Perd Wai</span><span>Prototype for user validation</span></footer>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
