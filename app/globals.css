@@ -90,6 +90,22 @@ h3 { margin-bottom: 8px; font-size: 1.15rem; }
 .start-facts { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 26px; color: var(--muted-text); font-size: .72rem; }
 .start-facts span:nth-child(2) { color: var(--input); }
 .start-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 26px; border-top: 1px solid var(--line); padding-top: 26px; }
+.intake-assistant { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 26px; }
+.intake-assistant .section-heading { margin-bottom: 14px; }
+.intake-assistant h3 { margin-bottom: 7px; font-size: 1rem; }
+.intake-assistant .muted-copy { margin-bottom: 0; }
+.intake-textarea { display: block; width: 100%; resize: vertical; border: 1px solid var(--line); border-radius: 7px; padding: 12px; color: var(--ink); background: #fff; font: inherit; font-size: .82rem; line-height: 1.55; outline: none; }
+.intake-textarea:focus-visible { outline: 3px solid rgba(36,77,59,.25); outline-offset: 2px; }
+.intake-actions { display: flex; gap: 16px; align-items: center; justify-content: space-between; margin-top: 10px; }
+.intake-actions p { max-width: 560px; margin: 0; color: var(--muted-text); font-size: .68rem; line-height: 1.45; }
+.intake-draft { display: grid; gap: 18px; margin-top: 22px; border-top: 1px solid var(--line); padding-top: 20px; }
+.intake-draft .section-heading { margin-bottom: 0; }
+.intake-draft h4 { margin: 0 0 9px; color: var(--primary); font-size: .78rem; }
+.intake-values { margin: 0; border-top: 1px solid var(--line); }
+.intake-values > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.intake-values dt { color: var(--muted-text); font-size: .74rem; }
+.intake-values dd { margin: 0; font-size: .76rem; font-variant-numeric: tabular-nums; font-weight: 700; text-align: right; }
+.intake-list { margin: 0; padding-left: 18px; color: var(--muted-text); font-size: .75rem; line-height: 1.55; }
 .onboarding-guide { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
 .onboarding-guide section { min-width: 0; padding: 0; }
 .onboarding-guide .guide-outcome { border: 0; background: transparent; }
@@ -233,6 +249,7 @@ footer { border-top: 1px solid var(--line); color: var(--muted-text); font-size:
   .start-card { padding: 22px; }
   .start-facts { margin-bottom: 22px; }
   .start-options { grid-template-columns: 1fr; }
+  .intake-actions { align-items: flex-start; flex-direction: column; }
   .onboarding-guide { grid-template-columns: 1fr; gap: 20px; }
   .onboarding-guide .guide-outcome { border-top: 1px solid var(--line); padding-top: 20px; }
   .step-nav { grid-template-columns: repeat(5, minmax(0, 1fr)); }

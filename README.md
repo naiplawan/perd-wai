@@ -19,6 +19,7 @@ A Thai-first café launch simulator that helps aspiring founders stress-test sta
 - CSV export and print-to-PDF
 - Accessible monthly table and responsive layout
 - Optional OpenRouter AI explanation with strict response validation and deterministic fallback
+- Optional AI-assisted plan intake that drafts only user-provided numbers for review
 - Radix-based shadcn/ui primitives with locally owned component source
 - Semantic Perd Wai tokens and locally bundled Noto Sans Thai typography
 
@@ -37,7 +38,9 @@ Open <http://localhost:3000>.
 
 ### Optional OpenRouter explanation
 
-Copy `.env.example` to `.env.local` and add an OpenRouter key. Set `OPENROUTER_MODEL` to a pinned model with a `:free` variant when possible; leaving it as `openrouter/free` is convenient for prototyping but selects models dynamically.
+Copy `.env.example` to `.env.local` and add an OpenRouter key. The default is pinned to a free model with structured-output support; change `OPENROUTER_MODEL` if you prefer another compatible model.
+
+Provider data collection is denied by default. Set `OPENROUTER_ZDR=true` only when the selected model has Zero Data Retention endpoints available.
 
 ```bash
 cp .env.example .env.local
@@ -66,6 +69,7 @@ The verification ladder runs lint, 14 unit tests, fourteen desktop/mobile E2E jo
 - `app/lib/finance.ts` — deterministic domain calculations
 - `app/lib/ai-explanation.ts` — shared AI response contract and validation
 - `app/api/explain-plan/route.ts` — server-side OpenRouter explanation route
+- `app/api/draft-plan/route.ts` — server-side OpenRouter intake-draft route
 - `app/ui/simulator.tsx` — bilingual simulator and browser-side behavior
 - `components/ui/` — shadcn/ui buttons, cards, fields, alerts, badges, and table primitives
 - `components/ui/money-input.tsx` — owned currency-input behavior and presentation

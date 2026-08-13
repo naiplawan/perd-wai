@@ -63,6 +63,37 @@ test("founder can request an optional AI explanation without changing the foreca
   await expect(endingCash).toContainText("103,580");
 });
 
+test("founder can review and apply an AI-drafted starting plan", async ({ page }) => {
+  await page.route("**/api/draft-plan", (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({
+      summary: "I found a few starting values from your description.",
+      suggestedInputs: {
+        initialCapital: 300000,
+        rent: 18000,
+        customersPerDay: 40
+      },
+      assumptionsToVerify: ["Confirm the rent and customer estimate."],
+      disclaimer: "These are AI-drafted starting points."
+    })
+  }));
+
+  await page.getByRole("radio", { name: "EN", exact: true }).click();
+  await page.getByLabel("Describe your café idea").fill("I have savings and a possible café location.");
+  await page.getByRole("button", { name: "Draft my starting numbers" }).click();
+
+  await expect(page.getByTestId("intake-draft")).toContainText("I found a few starting values");
+  await expect(page.getByTestId("intake-draft")).toContainText("300,000");
+  await page.getByRole("button", { name: "Use this draft in my plan" }).click();
+
+  await expect(page.getByRole("heading", { name: "Money before opening" })).toBeVisible();
+  await expect(page.getByLabel("Initial capital")).toHaveValue("300000");
+  await expect(page.getByLabel("Monthly rent")).toHaveValue("18000");
+  await page.getByRole("button", { name: "Next: Sales assumptions" }).click();
+  await expect(page.getByLabel("Expected customers per day")).toHaveValue("40");
+});
+
 test("founder can complete the staged custom-plan flow", async ({ page }) => {
   await page.getByRole("radio", { name: "EN", exact: true }).click();
   await page.getByRole("button", { name: "Create my plan" }).click();

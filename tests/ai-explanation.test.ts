@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { explanationDisclaimer, isPlanExplanation } from "../app/lib/ai-explanation";
+import { draftDisclaimer, explanationDisclaimer, isPlanDraft, isPlanExplanation } from "../app/lib/ai-explanation";
 
 describe("AI explanation contract", () => {
   it("accepts a bounded explanation payload", () => {
@@ -35,5 +35,32 @@ describe("AI explanation contract", () => {
         disclaimer: explanationDisclaimer("en")
       })
     ).toBe(false);
+  });
+});
+
+describe("AI intake draft contract", () => {
+  it("accepts partial, non-negative financial suggestions", () => {
+    expect(isPlanDraft({
+      summary: "I found a starting estimate for the shop.",
+      suggestedInputs: { initialCapital: 300000, customersPerDay: 40 },
+      assumptionsToVerify: ["Confirm the monthly rent with the landlord."],
+      disclaimer: draftDisclaimer("en")
+    })).toBe(true);
+  });
+
+  it("rejects unknown fields and negative suggestions", () => {
+    expect(isPlanDraft({
+      summary: "Draft",
+      suggestedInputs: { inventedField: 10 },
+      assumptionsToVerify: [],
+      disclaimer: draftDisclaimer("en")
+    })).toBe(false);
+
+    expect(isPlanDraft({
+      summary: "Draft",
+      suggestedInputs: { rent: -1 },
+      assumptionsToVerify: [],
+      disclaimer: draftDisclaimer("en")
+    })).toBe(false);
   });
 });

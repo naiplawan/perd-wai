@@ -14,7 +14,8 @@ import { explanationDisclaimer, isPlanExplanation, type ExplanationRequest } fro
 
 const inputKeys = Object.keys(DEFAULT_INPUTS) as InputKey[];
 const languageValues = new Set(["en", "th"]);
-const model = process.env.OPENROUTER_MODEL ?? "openrouter/free";
+const model = process.env.OPENROUTER_MODEL ?? "google/gemma-4-26b-a4b-it:free";
+const useZeroDataRetention = process.env.OPENROUTER_ZDR === "true";
 const requestWindowMs = 60_000;
 const requestLimit = 5;
 const requestCounts = new Map<string, { count: number; resetAt: number }>();
@@ -166,6 +167,8 @@ export async function POST(request: Request) {
   const userMessage = JSON.stringify({ language: body.language, inputs, summary });
 
   let providerResponse: Response;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20_000);
   try {
     providerResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -188,15 +191,18 @@ export async function POST(request: Request) {
         provider: {
           require_parameters: true,
           data_collection: "deny",
-          zdr: true
+          ...(useZeroDataRetention ? { zdr: true } : {})
         },
         temperature: 0.2,
         max_tokens: 900,
         stream: false
-      }, null, 2)
+      }, null, 2),
+      signal: controller.signal
     });
   } catch {
     return errorResponse("The AI provider could not be reached.", 502, "AI_UNAVAILABLE");
+  } finally {
+    clearTimeout(timeout);
   }
 
   if (!providerResponse.ok) {

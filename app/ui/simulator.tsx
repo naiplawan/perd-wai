@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/ui/money-input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import type { PlanExplanation } from "../lib/ai-explanation";
+import type { PlanDraft, PlanExplanation } from "../lib/ai-explanation";
 
 import {
   DEFAULT_INPUTS,
@@ -171,6 +171,20 @@ const copy = {
     createPlanBody: "Start with your own café assumptions.",
     exploreExample: "Explore an example café",
     exploreExampleBody: "See how the simulator works before entering your numbers.",
+    intakeTitle: "Describe your café idea",
+    intakeBody: "Tell the AI what you know so far. It will draft only the numbers you mention for you to review.",
+    intakePlaceholder: "Example: I have 300,000 baht, rent may be 18,000 a month, and I expect about 40 customers a day…",
+    intakeButton: "Draft my starting numbers",
+    intakeLoading: "Reading your description…",
+    intakeError: "The AI could not make a draft right now. You can still enter the numbers yourself.",
+    intakeDraftTitle: "Review the draft",
+    intakeDraftSummary: "What the AI understood",
+    intakeSuggested: "Suggested values",
+    intakeMissing: "Still needed before a forecast",
+    intakeVerify: "Check these assumptions",
+    intakeApply: "Use this draft in my plan",
+    intakeApplied: "Draft added to your plan. Review each field before continuing.",
+    intakeDisclosure: "AI suggestions are not calculations. Nothing changes until you apply the draft.",
     exampleBanner: "Example plan — replace these assumptions with your own before deciding.",
     saved: "Saved on this device",
     startOver: "Start over",
@@ -255,6 +269,20 @@ const copy = {
     createPlanBody: "เริ่มจากตัวเลขของร้านที่คุณกำลังวางแผน",
     exploreExample: "ดูตัวอย่างร้าน",
     exploreExampleBody: "ดูวิธีทำงานของระบบก่อนใส่ตัวเลขของคุณ",
+    intakeTitle: "เล่าไอเดียร้านกาแฟของคุณ",
+    intakeBody: "บอก AI ว่าคุณรู้อะไรแล้ว ระบบจะร่างเฉพาะตัวเลขที่คุณพูดถึงเพื่อให้คุณตรวจสอบ",
+    intakePlaceholder: "เช่น มีเงินทุน 300,000 บาท ค่าเช่าน่าจะ 18,000 บาทต่อเดือน และคาดว่ามีลูกค้า 40 คนต่อวัน…",
+    intakeButton: "ร่างตัวเลขเริ่มต้นให้ฉัน",
+    intakeLoading: "กำลังอ่านคำอธิบาย…",
+    intakeError: "ตอนนี้ AI ยังร่างข้อมูลไม่ได้ คุณยังกรอกตัวเลขด้วยตัวเองได้",
+    intakeDraftTitle: "ตรวจสอบร่างข้อมูล",
+    intakeDraftSummary: "สิ่งที่ AI เข้าใจ",
+    intakeSuggested: "ค่าที่เสนอ",
+    intakeMissing: "ข้อมูลที่ยังต้องใส่ก่อนดูประมาณการ",
+    intakeVerify: "ตรวจสอบสมมติฐานเหล่านี้",
+    intakeApply: "ใช้ร่างนี้ในแผนของฉัน",
+    intakeApplied: "เพิ่มร่างข้อมูลลงในแผนแล้ว ตรวจสอบทุกช่องก่อนดำเนินการต่อ",
+    intakeDisclosure: "คำแนะนำจาก AI ไม่ใช่การคำนวณ ข้อมูลจะไม่เปลี่ยนจนกว่าคุณจะกดยืนยัน",
     exampleBanner: "แผนตัวอย่าง — เปลี่ยนเป็นตัวเลขของคุณก่อนตัดสินใจ",
     saved: "บันทึกในอุปกรณ์นี้แล้ว",
     startOver: "เริ่มใหม่",
@@ -609,6 +637,9 @@ export function Simulator() {
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiCopied, setAiCopied] = useState(false);
   const [aiFingerprint, setAiFingerprint] = useState<string | null>(null);
+  const [intakeDescription, setIntakeDescription] = useState("");
+  const [intakeDraft, setIntakeDraft] = useState<PlanDraft | null>(null);
+  const [intakeState, setIntakeState] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const errorSummaryRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -723,6 +754,9 @@ export function Simulator() {
     setShowResults(false);
     setUsesLoan(false);
     setShowsTaxReserve(false);
+    setIntakeDescription("");
+    setIntakeDraft(null);
+    setIntakeState("idle");
   }
 
   function updateInput(field: InputKey, value: number) {
@@ -827,6 +861,57 @@ export function Simulator() {
     setAiCopied(true);
   }
 
+  async function draftPlanFromDescription() {
+    if (intakeState === "loading" || intakeDescription.trim().length < 10) return;
+    setIntakeState("loading");
+    setIntakeDraft(null);
+    try {
+      const response = await fetch("/api/draft-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ language, description: intakeDescription })
+      });
+      const payload = await response.json() as PlanDraft | { error?: string };
+      if (!response.ok || !("suggestedInputs" in payload)) throw new Error("AI draft unavailable");
+      setIntakeDraft(payload);
+      setIntakeState("ready");
+    } catch {
+      setIntakeState("error");
+    }
+  }
+
+  function applyIntakeDraft() {
+    if (!intakeDraft) return;
+    const nextInputs = { ...EMPTY_INPUTS, ...intakeDraft.suggestedInputs };
+    const nextScenarios: ScenarioInputs = {
+      customersPerDay: { low: 0, expected: nextInputs.customersPerDay, high: 0 },
+      averageOrderValue: { low: 0, expected: nextInputs.averageOrderValue, high: 0 },
+      variableCostPerOrder: { low: 0, expected: nextInputs.variableCostPerOrder, high: 0 }
+    };
+    const saved: SavedPlan = {
+      version: 2,
+      language,
+      mode: "custom",
+      inputs: nextInputs,
+      scenarios: nextScenarios,
+      currentStep: 0,
+      maxStep: 0,
+      showResults: false,
+      usesLoan: nextInputs.loanAmount > 0 || nextInputs.monthlyLoanRepayment > 0,
+      showsTaxReserve: nextInputs.taxFeesReserve > 0
+    };
+    setMode("custom");
+    setInputs(nextInputs);
+    setScenarioInputs(nextScenarios);
+    setCurrentStep(0);
+    setMaxStep(0);
+    setShowResults(false);
+    setUsesLoan(saved.usesLoan);
+    setShowsTaxReserve(saved.showsTaxReserve);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+    window.requestAnimationFrame(() => document.getElementById("stage-heading")?.scrollIntoView({ behavior: "smooth" }));
+  }
+
   return (
     <>
       <header className="site-header">
@@ -860,6 +945,52 @@ export function Simulator() {
                 <div><h3>{t.outcomeTitle}</h3><ul>{t.outcomeItems.map((item) => <li key={item}>{item}</li>)}</ul></div>
               </section>
             </div>
+            <section className="intake-assistant" data-testid="intake-assistant">
+              <div className="section-heading">
+                <div>
+                  <p className="eyebrow">AI</p>
+                  <h3>{t.intakeTitle}</h3>
+                  <p className="muted-copy">{t.intakeBody}</p>
+                </div>
+              </div>
+              <textarea
+                aria-label={t.intakeTitle}
+                className="intake-textarea"
+                maxLength={2000}
+                onChange={(event) => setIntakeDescription(event.target.value)}
+                placeholder={t.intakePlaceholder}
+                rows={4}
+                value={intakeDescription}
+              />
+              <div className="intake-actions">
+                <p>{t.intakeDisclosure}</p>
+                <Button disabled={intakeState === "loading" || intakeDescription.trim().length < 10} onClick={draftPlanFromDescription} type="button" variant="actionOutline">
+                  {intakeState === "loading" ? t.intakeLoading : t.intakeButton}
+                </Button>
+              </div>
+              {intakeState === "error" ? <Alert className="border-destructive/30 bg-destructive/5" data-testid="intake-error" variant="destructive"><AlertDescription>{t.intakeError}</AlertDescription></Alert> : null}
+              {intakeDraft ? (
+                <div className="intake-draft" data-testid="intake-draft">
+                  <div className="section-heading">
+                    <div><p className="eyebrow">{t.intakeDraftTitle}</p><p className="muted-copy">{intakeDraft.summary}</p></div>
+                  </div>
+                  {Object.keys(intakeDraft.suggestedInputs).length > 0 ? (
+                    <section>
+                      <h4>{t.intakeSuggested}</h4>
+                      <dl className="intake-values">
+                        {(Object.entries(intakeDraft.suggestedInputs) as Array<[InputKey, number]>).map(([key, value]) => <div key={key}><dt>{fieldCopy[key][language]}</dt><dd>{reviewValue(key, value, language)}</dd></div>)}
+                      </dl>
+                    </section>
+                  ) : null}
+                  <section>
+                    <h4>{t.intakeMissing}</h4>
+                    <p className="muted-copy">{(Object.keys(EMPTY_INPUTS) as InputKey[]).filter((key) => intakeDraft.suggestedInputs[key] === undefined).slice(0, 6).map((key) => fieldCopy[key][language]).join(language === "en" ? ", " : "、")}{Object.keys(intakeDraft.suggestedInputs).length < Object.keys(EMPTY_INPUTS).length ? " …" : ""}</p>
+                  </section>
+                  {intakeDraft.assumptionsToVerify.length > 0 ? <section><h4>{t.intakeVerify}</h4><ul className="intake-list">{intakeDraft.assumptionsToVerify.map((item) => <li key={item}>{item}</li>)}</ul></section> : null}
+                  <Button onClick={applyIntakeDraft} type="button" variant="action">{t.intakeApply}</Button>
+                </div>
+              ) : null}
+            </section>
             <div className="start-options">
               <Button onClick={() => chooseMode("custom")} variant="start">
                 <span><strong>{t.createPlan}</strong><small>{t.createPlanBody}</small></span><ArrowRight aria-hidden="true" />

@@ -15,6 +15,13 @@ export type PlanExplanation = {
   disclaimer: string;
 };
 
+export type PlanDraft = {
+  summary: string;
+  suggestedInputs: Partial<Record<InputKey, number>>;
+  assumptionsToVerify: string[];
+  disclaimer: string;
+};
+
 const driverKeys = new Set<ExplanationDriverKey>([
   "initialCapital",
   "rent",
@@ -67,10 +74,44 @@ export function isPlanExplanation(value: unknown): value is PlanExplanation {
     && isString(candidate.disclaimer, 280);
 }
 
+export function isPlanDraft(value: unknown): value is PlanDraft {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Record<string, unknown>;
+  const suggestedInputs = candidate.suggestedInputs;
+  const assumptionsToVerify = candidate.assumptionsToVerify;
+
+  return isString(candidate.summary, 500)
+    && Boolean(suggestedInputs)
+    && typeof suggestedInputs === "object"
+    && !Array.isArray(suggestedInputs)
+    && Object.entries(suggestedInputs as Record<string, unknown>).every(([key, item]) =>
+      driverKeys.has(key as ExplanationDriverKey)
+        && key !== "startup-costs"
+        && key !== "cash-runway"
+        && key !== "break-even"
+        && key !== "scenario-range"
+        && typeof item === "number"
+        && Number.isFinite(item)
+        && item >= 0
+    )
+    && assumptionsToVerify !== undefined
+    && Array.isArray(assumptionsToVerify)
+    && assumptionsToVerify.length <= 8
+    && assumptionsToVerify.every((item) => isString(item, 240))
+    && typeof candidate.disclaimer === "string"
+    && isString(candidate.disclaimer, 280);
+}
+
 export function explanationDisclaimer(language: "en" | "th") {
   return language === "en"
     ? "Numbers are calculated by Perd Wai. This AI explanation is educational, not financial, tax, legal, or investment advice."
     : "ตัวเลขคำนวณโดยเปิดไหว คำอธิบายจาก AI นี้มีไว้เพื่อการศึกษา ไม่ใช่คำแนะนำทางการเงิน ภาษี กฎหมาย หรือการลงทุน";
+}
+
+export function draftDisclaimer(language: "en" | "th") {
+  return language === "en"
+    ? "These are AI-drafted starting points from your description. Review every value before using the forecast."
+    : "ตัวเลขเหล่านี้เป็นร่างเริ่มต้นจาก AI ตามคำอธิบายของคุณ ควรตรวจสอบทุกค่าก่อนใช้ประมาณการ";
 }
 
 export type ExplanationRequest = {
