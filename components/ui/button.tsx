@@ -19,6 +19,22 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
+        start:
+          "h-auto min-h-22 w-full justify-between gap-4 rounded-lg bg-primary px-5 py-4 text-left text-primary-foreground whitespace-normal hover:bg-primary/90 active:scale-[.99] [&>span]:grid [&>span]:gap-1 [&_strong]:text-base [&_strong]:font-bold [&_small]:text-xs [&_small]:font-normal [&_small]:leading-5 [&_small]:text-primary-foreground/70",
+        startOutline:
+          "h-auto min-h-22 w-full justify-between gap-4 rounded-lg border-border bg-card px-5 py-4 text-left text-foreground whitespace-normal hover:bg-muted active:scale-[.99] [&>span]:grid [&>span]:gap-1 [&_strong]:text-base [&_strong]:font-bold [&_small]:text-xs [&_small]:font-normal [&_small]:leading-5 [&_small]:text-muted-foreground",
+        step:
+          "h-auto min-h-12 justify-start gap-2 rounded-none border-x-0 border-t-0 border-b-2 border-transparent bg-transparent px-2 py-2 text-left text-[.72rem] text-muted-foreground whitespace-normal hover:border-border hover:bg-transparent aria-[current=step]:border-primary aria-[current=step]:text-foreground max-[560px]:min-h-10 max-[560px]:min-w-0 max-[560px]:justify-center max-[560px]:px-1 [&_.step-index]:text-[.7rem] [&_.step-index]:font-bold [&_.step-index]:text-muted-foreground aria-[current=step]:[&_.step-index]:text-primary max-[560px]:[&_.step-label]:hidden max-[560px]:[&_.step-index]:text-[.72rem]",
+        action:
+          "h-auto min-h-10.5 rounded-[9px] border-primary bg-primary px-3.5 py-2.5 text-[.76rem] font-bold text-primary-foreground hover:bg-primary/85",
+        actionOutline:
+          "h-auto min-h-10.5 rounded-[9px] border-border bg-card px-3.5 py-2.5 text-[.76rem] font-bold text-primary hover:bg-muted",
+        optional:
+          "mt-1 border-border bg-transparent text-primary hover:bg-muted [&_.optional-label]:ml-1 [&_.optional-label]:text-xs [&_.optional-label]:font-normal [&_.optional-label]:text-muted-foreground",
+        quietLink:
+          "h-auto border-0 bg-transparent p-1 text-[.78rem] font-bold text-muted-foreground underline decoration-border underline-offset-4 hover:bg-transparent hover:text-primary",
+        review:
+          "min-h-10 text-primary hover:bg-muted",
       },
       size: {
         default:

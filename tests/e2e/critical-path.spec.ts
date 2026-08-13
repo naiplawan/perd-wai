@@ -11,16 +11,18 @@ test("first-time founder chooses their starting mode in a Thai-first experience"
   await expect(page.getByRole("heading", { level: 1, name: /ร้านกาแฟของคุณ/ })).toBeVisible();
   await expect(page.getByRole("button", { name: "สร้างแผนของฉัน" })).toBeVisible();
   await expect(page.getByRole("button", { name: "ดูตัวอย่างร้าน" })).toBeVisible();
+  await expect(page.getByTestId("onboarding-guide")).toContainText("เตรียมตัวเลขเหล่านี้ไว้ใกล้มือ");
+  await expect(page.getByTestId("onboarding-guide")).toContainText("จำนวนลูกค้าต่อวันที่ทำให้คุ้มทุน");
   await expect(page.getByLabel("เงินทุนตั้งต้น")).toHaveCount(0);
   await expect(page.getByTestId("recommendation")).toHaveCount(0);
 
-  await page.getByRole("button", { name: "EN", exact: true }).click();
+  await page.getByRole("radio", { name: "EN", exact: true }).click();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await expect(page.getByRole("button", { name: "Create my plan" })).toBeVisible();
 });
 
 test("founder can explore an example, stress-test it, and export the plan", async ({ page }) => {
-  await page.getByRole("button", { name: "EN", exact: true }).click();
+  await page.getByRole("radio", { name: "EN", exact: true }).click();
   await page.getByRole("button", { name: "Explore an example café" }).click();
 
   await expect(page.getByText("Example plan — replace these assumptions with your own before deciding.")).toBeVisible();
@@ -38,11 +40,35 @@ test("founder can explore an example, stress-test it, and export the plan", asyn
   await expect((await download).suggestedFilename()).toBe("perd-wai-plan.csv");
 });
 
+test("founder can request an optional AI explanation without changing the forecast", async ({ page }) => {
+  await page.route("**/api/explain-plan", (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({
+      summary: "The plan is most sensitive to demand and cash runway.",
+      keyDrivers: [{ key: "customersPerDay", why: "Demand changes the cash available each month." }],
+      assumptionsToVerify: ["Count customers at the location."],
+      nextSteps: ["Run a small sales test."],
+      disclaimer: "Numbers are calculated by Perd Wai. This AI explanation is educational."
+    })
+  }));
+
+  await page.getByRole("radio", { name: "EN", exact: true }).click();
+  await page.getByRole("button", { name: "Explore an example café" }).click();
+  const endingCash = page.getByTestId("ending-cash-month-6");
+  await expect(endingCash).toContainText("103,580");
+
+  await page.getByRole("button", { name: "Explain my plan" }).click();
+  await expect(page.getByTestId("ai-explanation-card")).toContainText("The plan is most sensitive to demand");
+  await expect(endingCash).toContainText("103,580");
+});
+
 test("founder can complete the staged custom-plan flow", async ({ page }) => {
-  await page.getByRole("button", { name: "EN", exact: true }).click();
+  await page.getByRole("radio", { name: "EN", exact: true }).click();
   await page.getByRole("button", { name: "Create my plan" }).click();
 
   await expect(page.getByRole("heading", { name: "Money before opening" })).toBeVisible();
+  await expect(page.getByTestId("stage-explainer")).toContainText("what remains on opening day");
   await expect(page.getByLabel("Average order value")).toHaveCount(0);
   await page.getByLabel("Initial capital").fill("400000");
   await page.getByLabel("Monthly rent").fill("15000");
@@ -50,6 +76,7 @@ test("founder can complete the staged custom-plan flow", async ({ page }) => {
   await page.getByLabel("Equipment and renovation").fill("120000");
   await page.getByRole("button", { name: "Next: Sales assumptions" }).click();
 
+  await expect(page.getByTestId("stage-explainer")).toContainText("customers per day × opening days × average order value");
   await page.getByLabel("Average order value").fill("80");
   await page.getByLabel("Variable cost per order").fill("24");
   await page.getByLabel("Expected customers per day").fill("60");
@@ -82,7 +109,7 @@ test("founder can complete the staged custom-plan flow", async ({ page }) => {
 });
 
 test("money fields expose currency context and invalid stages focus an actionable summary", async ({ page }) => {
-  await page.getByRole("button", { name: "EN", exact: true }).click();
+  await page.getByRole("radio", { name: "EN", exact: true }).click();
   await page.getByRole("button", { name: "Create my plan" }).click();
 
   const capital = page.getByLabel("Initial capital");
@@ -98,7 +125,7 @@ test("money fields expose currency context and invalid stages focus an actionabl
 });
 
 test("invalid scenario ranges show field guidance and suppress decision results", async ({ page }) => {
-  await page.getByRole("button", { name: "EN", exact: true }).click();
+  await page.getByRole("radio", { name: "EN", exact: true }).click();
   await page.getByRole("button", { name: "Explore an example café" }).click();
   await page.getByLabel("Pessimistic customers per day").fill("70");
 
@@ -107,7 +134,7 @@ test("invalid scenario ranges show field guidance and suppress decision results"
 });
 
 test("formatted numeric assumptions remain editable and persist locally", async ({ page }) => {
-  await page.getByRole("button", { name: "EN", exact: true }).click();
+  await page.getByRole("radio", { name: "EN", exact: true }).click();
   await page.getByRole("button", { name: "Explore an example café" }).click();
   await page.getByRole("button", { name: "Money before opening" }).click();
 
