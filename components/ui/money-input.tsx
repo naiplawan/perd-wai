@@ -24,15 +24,14 @@ type MoneyInputProps = Omit<React.ComponentProps<"input">, "onChange" | "type" |
 };
 
 function MoneyInput({ className, decimal = false, suffix, testId, value, onBlur, onValueChange, ...props }: MoneyInputProps) {
-  const [draft, setDraft] = React.useState(String(value));
+  const formatter = decimal ? decimalFormatter : integerFormatter;
+  const [draft, setDraft] = React.useState(() => formatter.format(value));
   const [previousValue, setPreviousValue] = React.useState(value);
 
   if (value !== previousValue) {
     setPreviousValue(value);
-    if (parseMoneyDraft(draft) !== value) setDraft(String(value));
+    if (parseMoneyDraft(draft) !== value) setDraft(formatter.format(value));
   }
-
-  const formatter = decimal ? decimalFormatter : integerFormatter;
 
   return (
     <div className="money-input" data-slot="money-input" data-testid={testId}>
