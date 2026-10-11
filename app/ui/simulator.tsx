@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ArrowDown, ArrowRight, ArrowUpRight, Check, CircleAlert, Clock, Download, Info, PencilLine, Printer, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUpRight, CalendarClock, Check, CircleAlert, Clock, Download, Info, PencilLine, Printer, ShieldCheck, Sparkles, TrendingUp, TriangleAlert, Users, Wallet } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -44,6 +44,7 @@ import {
   type ScenarioDriver,
   type ScenarioName
 } from "./content";
+import { CafeStorefront, CoffeeCup } from "./illustrations";
 import { PlanInputs } from "./plan-inputs";
 
 type PlanMode = "choice" | "custom" | "example";
@@ -285,6 +286,7 @@ export function Simulator() {
         <main id="top" className="shell">
           <section className="landing">
             <div className="landing-hero">
+              <CafeStorefront className="hero-illustration" />
               <p className="eyebrow">{t.heroEyebrow}</p>
               <h1>{t.heroTitle}</h1>
               <p className="hero-body">{t.heroBody}</p>
@@ -410,9 +412,9 @@ export function Simulator() {
 
             {!isValid ? (
               <Card className="empty-state" data-testid="empty-state">
-                <CircleAlert aria-hidden="true" />
+                <CoffeeCup className="empty-art" level="low" />
                 <div>
-                  <h3>{t.emptyTitle}</h3>
+                  <h3><CircleAlert aria-hidden="true" /> {t.emptyTitle}</h3>
                   <p className="muted-copy">{t.emptyBody}</p>
                   <ul className="missing-list">
                     {invalidKeys.map((key) => <li key={key}><button onClick={() => focusField(key)} type="button">{fieldCopy[key][language]} <ArrowRight aria-hidden="true" /></button></li>)}
@@ -436,10 +438,10 @@ export function Simulator() {
                 {scenariosValid ? (
                   <div className={`verdict verdict-${planningRecommendation}`} data-testid="recommendation" role="status">
                     <div className="verdict-main">
-                      <span className="verdict-icon" aria-hidden="true">{verdictIcon}</span>
+                      <CoffeeCup className="verdict-art" level={planningRecommendation === "start-validating" ? "full" : planningRecommendation === "revise-plan" ? "half" : "low"} />
                       <div>
                         <p className="eyebrow">{t.answerQuestion}</p>
-                        <h3>{recommendationTitles[planningRecommendation][language]}</h3>
+                        <h3><span className="verdict-icon" aria-hidden="true">{verdictIcon}</span> {recommendationTitles[planningRecommendation][language]}</h3>
                         <p className="verdict-summary" data-testid="plain-summary">{plainSummary(inputs, scenarios.base, language)}</p>
                         <p>{recommendationEvidence(scenarios, planningRecommendation, language)}</p>
                       </div>
@@ -459,22 +461,22 @@ export function Simulator() {
 
                 <div className="tiles">
                   <div className={`tile ${forecast.cashNegativeMonth !== null ? "is-bad" : "is-good"}`} data-testid="runway-tile">
-                    <span>{t.runway}</span>
+                    <span><CalendarClock aria-hidden="true" /> {t.runway}</span>
                     <strong>{cashRunoutText(forecast, t)}</strong>
                     <small>{t.month} 6: {currency.format(forecast.months[5].endingCash)}</small>
                   </div>
                   <div className={`tile ${forecast.openingCashAfterSetup < 0 ? "is-bad" : ""}`}>
-                    <span>{t.openingCash}</span>
+                    <span><Wallet aria-hidden="true" /> {t.openingCash}</span>
                     <strong>{currency.format(forecast.openingCashAfterSetup)}</strong>
                     <small>{t.openingCashNote}</small>
                   </div>
                   <div className={`tile ${forecast.monthlyCashMovement < 0 ? "is-bad" : "is-good"}`}>
-                    <span>{t.monthlyCash}</span>
+                    <span><TrendingUp aria-hidden="true" /> {t.monthlyCash}</span>
                     <strong>{forecast.monthlyCashMovement >= 0 ? "+" : ""}{currency.format(forecast.monthlyCashMovement)}</strong>
                     <small>{t.monthlyCashNote}</small>
                   </div>
                   <div className="tile">
-                    <span>{t.breakEven}</span>
+                    <span><Users aria-hidden="true" /> {t.breakEven}</span>
                     <strong>{customersNeeded(forecast)}</strong>
                     <small>{t.youExpect} {decimal.format(focusCustomers)}</small>
                   </div>

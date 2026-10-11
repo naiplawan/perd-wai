@@ -8,6 +8,10 @@ release tags yet.
 
 ### Added
 
+- Minimal flat vector illustrations drawn for Perd Wai (inline SVG, no third-party assets):
+  a café storefront on the landing page, and a coffee cup in the answer card that is full,
+  half-full, or nearly empty to match the verdict, also shown when numbers need fixing.
+- Icons on the four headline tiles (Lucide, already a dependency).
 - Live dashboard: every assumption has a slider and a number field, and all charts update
   as you type or drag.
 - Cash chart (Recharts) showing money from opening day through month 6, with a slow-to-good
@@ -45,4 +49,5 @@ release tags yet.
 - Split `app/ui/simulator.tsx` into `content.ts` (copy and formatting), `charts.tsx`,
   `plan-inputs.tsx`, and the simulator shell.
 - Added `recharts@3.10.1`.
+- Ignore `.vercel` so local Vercel project links are not committed.
 - Rewrote the Playwright critical-path suite for the new flows (10 tests × desktop and mobile).
